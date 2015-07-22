@@ -14,7 +14,7 @@ else:
 username="hejjun"
 password="Connect8ons"
 #root uri of the build
-baseURI = "https://rtpmsa.raleigh.ibm.com/msa/projects/b/build.topsail/drivers/NTS20.0/"
+baseURI = "https://rtpmsa.raleigh.ibm.com/msa/projects/b/build.topsail/builds/NTS20.0/"
 
 #labelURI can be current build or other bvtpassed txt
 labelURI = baseURI+"BVTPassedBuilds.txt"
@@ -89,9 +89,17 @@ buildURL = baseURI+labelName[labelName.__len__()-1].strip()+"/";
 logConsole("Get the build directory  path  as \n"+buildURL);
 
 #check local download record
-baseSource="/projects/b/build.topsail/drivers/NTS20.0/"
+baseSource="/projects/b/build.topsail/builds/NTS20.0/"
 source=baseSource+labelName[labelName.__len__()-1].strip()+"/"
 dest="D:/build/traveler/builds"
+
+#add path initialized function
+checkpth=''
+for pth in baseSource.split('/'):
+    checkpth = checkpth+'/'+ pth
+    if not os.path.exists(dest+"/"+checkpth):
+        os.mkdir(dest+checkpth)
+		
 if not os.path.exists(dest+"/"+localLabelFile):
 	logConsole("Create local label "+localLabelFile);
 	file = open(dest+"/"+localLabelFile,"w+")
@@ -102,14 +110,22 @@ localLabelfile_h=open(dest+"/"+localLabelFile,"a+")
 downLoadReady = localLabelfile_h.read().strip().find(labelName[labelName.__len__()-1].strip());
 logConsole("Search Label in label file as : "+str(downLoadReady) );
 localLabelfile_h.close()
+#download the build from start point
+relativePath="Build_Output/webkit/"  #change to your relative path
+startPoint=labelName[labelName.__len__()-1].strip()+"/"+relativePath
+checkpth=''
+for pth in startPoint.split('/'):
+    checkpth = checkpth+'/'+ pth
+    if not os.path.exists(dest+"/"+baseSource+"/"+checkpth):
+        os.mkdir(dest+"/"+baseSource+"/"+checkpth)
 #download the build by the label set
 if downLoadReady == -1:	
     ftp=FTP("rtpmsa.raleigh.ibm.com")
-    ftp.set_debuglevel(2)
+    #ftp.set_debuglevel(2)
     rt = ftp.login(username,password)
     logConsole(rt);
     logConsole("ftp source path \n"+source);
-    downloadFiles(source,dest)
+    downloadFiles(source+relativePath,dest)
 	#add label file build number information
     localLabelfile_h=open(dest+"/"+localLabelFile,"a+")
     localLabelfile_h.write(labelName[labelName.__len__()-1].strip()+"\r\n")
@@ -118,7 +134,7 @@ if downLoadReady == -1:
 else:
     logConsole("build already downloaded");
 
-
+'''
 #tar gz file
 if not os.path.exists(dest+"/"+baseSource+labelName[labelName.__len__()-1].strip()+".tar.gz"):
     logConsole("Gzip file not exist,  create "+labelName[labelName.__len__()-1].strip()+".tar.gz")
@@ -171,5 +187,5 @@ if rt.__str__().find(labelName[labelName.__len__()-1].strip()) == -1 :
     ftp.quit()
 else:
     logConsole("File already uploaded, skip upload")
-	
+'''
 print "Done!"
